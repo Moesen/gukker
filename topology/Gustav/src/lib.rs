@@ -1,4 +1,6 @@
-use std::{collections::HashMap, fmt, collections::HashSet};
+use core::panic;
+use std::{collections::HashMap, collections::HashSet, fmt, fs::File, io::{BufReader, BufRead}, path::{PathBuf, Path}, env};
+use project_root;
 
 #[derive(Debug, Clone)]
 pub struct Vertex {
@@ -44,7 +46,7 @@ impl Graph {
     }
 
     pub fn count_continents(&mut self) -> i32 {
-        let mut all_v = self.get_vertices_keys();
+        let all_v = self.get_vertices_keys();
         let mut q: Vec<i32> = Vec::new();
         let mut count = 0;
         while all_v.len() > 0 {
@@ -57,7 +59,6 @@ impl Graph {
                 panic!("Something")
             }
             vertex.visited = true;
-            
         }
         count
     }
@@ -74,6 +75,7 @@ impl fmt::Display for Vertex {
         write!(f, "ID: {}, neighbors: {:?}", self.id, self.neighbors)
     }
 }
+
 pub fn init_graph(f: impl std::io::BufRead) -> Graph {
     let mut graph = Graph::new();
     for line in f.lines() {
@@ -87,4 +89,43 @@ pub fn init_graph(f: impl std::io::BufRead) -> Graph {
         graph.add_edge(from, to);
     }
     return graph;
+}
+
+pub fn get_testfile_path(filename: &str, input: bool) -> PathBuf {
+    let root = project_root::get_project_root();
+    let mut fp = match root {
+        Ok(p) => p,
+        Err(e) => panic!("{}", e)
+    };
+    fp.push("tests");
+    match input {
+        true=>fp.push("inputs"),
+        false=>fp.push("outputs")
+    }
+    fp.push(filename);
+    return fp
+    
+}
+
+pub fn read_input(filename: &str) -> BufReader<File> {
+    let fp = get_testfile_path(filename, true);
+    let f = File::open(fp);
+    match f {
+        Ok(x)=>BufReader::new(x),
+        Err(x)=>panic!("{}", x)
+    }
+}
+
+pub fn read_output(filename: &str) -> (i32, i32) {
+    let fp = get_testfile_path(filename, false);
+    println!("{}", fp.to_str().unwrap());
+    let f = File::open(fp).expect("File");
+    let mut br = BufReader::new(f);
+    let mut line = String::new();
+    br.read_line(&mut line).expect("ReadLine");
+    let nums: Result<Vec<i32>, _> = line.trim().split(' ').map(str::parse).collect();
+    match nums {
+        Ok(x)=>(x[0], x[1]),
+        Err(e)=>panic!("{}", e)
+    }
 }
