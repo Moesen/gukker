@@ -1,0 +1,79 @@
+use std::{collections::HashMap, fmt};
+
+#[derive(Debug, Clone)]
+pub struct Vertex {
+    id: i32,
+    neighbors: Vec<i32>,
+    visited: bool,
+}
+
+#[derive(Debug)]
+pub struct Graph {
+    vertices: HashMap<i32, Vertex>,
+}
+
+impl Graph {
+    pub fn new() -> Graph {
+        Graph {
+            vertices: HashMap::new(),
+        }
+    }
+    pub fn add_edge(&mut self, from: i32, to: i32) {
+        self.vertices.entry(from).or_insert(Vertex {
+            id: from,
+            neighbors: Vec::new(),
+            visited: false,
+        });
+        self.vertices.entry(to).or_insert(Vertex {
+            id: to,
+            neighbors: Vec::new(),
+            visited: false,
+        });
+        if let Some(x) = self.vertices.get_mut(&from) {
+            x.neighbors.push(to);
+        };
+        if let Some(x) = self.vertices.get_mut(&to) {
+            x.neighbors.push(from);
+        }
+    }
+    pub fn get_vertices(&self) -> HashMap<i32, Vertex> {
+        self.vertices.clone()
+    }
+    pub fn get_vertices_keys(&self) -> Vec<i32> {
+
+           }
+    pub fn count_continents(&self) -> i32 {
+        let mut q = self.get_vertices_list();
+        let mut count = 0;
+        while q.len() > 0 {
+            q.pop();
+        }
+        unimplemented!("To come")
+    }
+}
+
+impl fmt::Display for Graph {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Num vertices: {}", self.vertices.len())
+    }
+}
+
+impl fmt::Display for Vertex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "ID: {}, neighbors: {:?}", self.id, self.neighbors)
+    }
+}
+pub fn init_graph(f: impl std::io::BufRead) -> Graph {
+    let mut graph = Graph::new();
+    for line in f.lines() {
+        let input = line.unwrap();
+        let inputs: Vec<&str> = input.split(" ").collect();
+        if inputs.len() <= 1 {
+            continue;
+        }
+        let from: i32 = inputs[0].parse::<i32>().unwrap();
+        let to: i32 = inputs[1].parse::<i32>().unwrap();
+        graph.add_edge(from, to);
+    }
+    return graph;
+}
